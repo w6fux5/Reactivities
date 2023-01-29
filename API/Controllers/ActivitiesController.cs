@@ -1,45 +1,46 @@
 using Application.Activities;
 using Domain;
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Persistence;
 
 namespace API.Controllers
 {
     public class ActivitiesController : BaseApiController
     {
-        [HttpGet] // api/activities
-        public async Task<ActionResult<List<Activity>>> GetActivities(CancellationToken ct)
-        //ct 的作用是當使用者關閉瀏覽器等取消請求的動作時，會將做到一半的邏輯取消
+        [HttpGet]
+        public async Task<IActionResult> GetActivities(CancellationToken ct)
         {
-            return await Mediator.Send(new List.Query(), ct);
+            //ct 的作用是當使用者關閉瀏覽器等取消請求的動作時，會將做到一半的邏輯取消
+            var result = await Mediator.Send(new List.Query(), ct);
+            return HandleResult(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Activity>> GetActivity(Guid id)
+        public async Task<IActionResult> GetActivity(Guid id)
         {
-            return await Mediator.Send(new Details.Query { Id = id });
+            var result = await Mediator.Send(new Details.Query { Id = id });
+            return HandleResult(result);
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateActivity(Activity activity)
         {
-            return Ok(await Mediator.Send(new Create.Command { Activity = activity }));
+            var result = await Mediator.Send(new Create.Command { Activity = activity });
+            return HandleResult(result);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> EditActivity(Guid id, Activity activity)
         {
-            Console.Write(id);
             activity.Id = id;
-            return Ok(await Mediator.Send(new Edit.Command { Activity = activity }));
+            var result = await Mediator.Send(new Edit.Command { Activity = activity });
+            return HandleResult(result);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteActivity(Guid id)
         {
-            return Ok(await Mediator.Send(new Delete.Command { Id = id }));
+            var result = await Mediator.Send(new Delete.Command { Id = id });
+            return HandleResult(result);
         }
     }
 }
